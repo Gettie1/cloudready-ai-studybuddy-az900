@@ -1,5 +1,5 @@
 
-const API_URL = "https://cloudready-ai-studybuddy-az900.onrender.com";
+const API_URL = 'http://127.0.0.1:8000'
 
 export type StudyLanguage = 'en' | 'sw'
 

@@ -1,6 +1,7 @@
 
 import os
 
+from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -11,6 +12,16 @@ load_dotenv()
 
 app = FastAPI(title="CloudReady AI Study Buddy API")
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173",
+        "https://cloudready-ai-studybuddy-az900.vercel.app",
+    ],
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 # Allow your local Vite frontend to communicate with FastAPI.
 app.add_middleware(
     CORSMiddleware,
