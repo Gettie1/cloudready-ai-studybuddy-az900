@@ -1,17 +1,20 @@
 
 import os
 
-from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from google import genai
 
+# Load environment variables for local development.
+# On Render, configure GEMINI_API_KEY in Environment Variables.
 load_dotenv()
 
+# Initialize the FastAPI application.
 app = FastAPI(title="CloudReady AI Study Buddy API")
 
+# Allow the local frontend and deployed Vercel frontend.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -19,18 +22,11 @@ app.add_middleware(
         "https://cloudready-ai-studybuddy-az900.vercel.app",
     ],
     allow_credentials=False,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-# Allow your local Vite frontend to communicate with FastAPI.
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
-    allow_credentials=False,
-    allow_methods=["GET", "POST"],
+    allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["Content-Type"],
 )
 
+# Initialize Gemini only when an API key is configured.
 api_key = os.getenv("GEMINI_API_KEY")
 client = genai.Client(api_key=api_key) if api_key else None
 
@@ -58,9 +54,7 @@ def study(request: StudyQuestion):
             detail="The AI API key is not configured.",
         )
 
-    language = (
-        "Swahili" if request.language == "sw" else "English"
-    )
+    language = "Swahili" if request.language == "sw" else "English"
 
     prompt = f"""
 You are CloudReady AI Study Buddy, a friendly tutor
@@ -101,8 +95,11 @@ Do not claim that your answer is an official exam question.
     except HTTPException:
         raise
     except Exception:
-        # Avoid exposing API keys or internal error details.
+        # Keep API keys and internal errors out of public responses.
         raise HTTPException(
             status_code=502,
-            detail="The AI service could not generate an answer. Please try again.",
+            detail=(
+                "The AI service could not generate an answer. "
+                "Please try again."
+            ),
         )
